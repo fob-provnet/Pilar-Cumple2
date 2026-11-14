@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cumple de Pilar 🦁</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Verdana, Geneva, sans-serif; font-size: 1.15rem;
+    background: #fdf6ec url('fondo.jpg') center / cover fixed;
+    min-height: 100vh;
+    display: flex; justify-content: center; align-items: flex-start;
+  }
+  .card {
+    width: 86vw; max-width: 420px; min-height: 100vh;
+    position: relative; z-index: 1;
+    background: rgba(255, 255, 255, 0.72);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px; text-align: center; color: #5a3e2b;
+  }
+  .sound {
+    align-self: flex-end; background: #a5d6a7; color: #fff; border: none;
+    border-radius: 50%; width: 44px; height: 44px; padding: 0; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,.15);
+  }
+  h1 { color: #e0609a; font-size: 2rem; margin: 8px 0 6px; }
+  .countdown {
+    background: #fff3e0; border-radius: 14px; padding: 10px;
+    font-weight: bold; color: #e65100; font-size: 1.15rem; margin-bottom: 12px; width: 100%;
+  }
+  .animals {
+    width: 100%; min-height: 130px; display: flex; flex-wrap: wrap;
+    justify-content: center; align-items: flex-end; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .animals img {
+    height: 120px; object-fit: contain;
+    animation: pop .8s ease both;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,.15));
+  }
+  .animals img.big { height: 190px; }
+  .animals img.mid { height: 150px; }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(20px) scale(.8); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .scene { display: none; width: 100%; flex-direction: column; gap: 10px; animation: fade .6s ease; }
+  .scene.active { display: flex; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .line {
+    font-size: 1.35rem; font-weight: 600; line-height: 1.5; min-height: 1.5em;
+    padding: 4px 6px;
+  }
+  .line.bold { font-weight: bold; color: #c2185b; }
+  .cursor::after { content: '|'; animation: blink .8s steps(1) infinite; color: #e0609a; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .maps {
+    display: none; margin-top: 16px; padding: 12px 24px; border-radius: 30px;
+    background: #4caf50; color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: bold;
+    box-shadow: 0 4px 10px rgba(76,175,80,.4);
+  }
+  .maps.show { display: inline-block; }
+  button.restart {
+    display: none; margin-top: 14px; padding: 10px 22px; border: none; border-radius: 30px;
+    background: #f48fb1; color: #fff; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+  }
+  button.restart.show { display: inline-block; }
+  .start {
+    margin-top: 12px; padding: 16px 30px; border: none; border-radius: 30px;
+    background: #f48fb1; color: #fff; font-size: 1.35rem; font-weight: bold; cursor: pointer;
+  }
+  .safari-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: linear-gradient(180deg, rgba(255,224,130,.35), rgba(255,255,255,0) 55%); }
+  .sun { position: absolute; top: -70px; right: -70px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, #ffe082 0%, rgba(255,193,7,.6) 40%, rgba(255,193,7,0) 70%); animation: sunpulse 6s ease-in-out infinite; }
+  @keyframes sunpulse { 50% { transform: scale(1.15); } }
+  .float { position: absolute; bottom: -50px; opacity: .45; animation: rise linear infinite; }
+  .float img { display: block; width: 56px; height: 56px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,.5); }
+  @keyframes rise { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(-115vh) rotate(25deg); } }
+  .info { width: 240px; flex: 0 0 90px; height: 90px; min-height: 90px; max-height: 90px; overflow: hidden; margin-top: 6px; padding: 10px 14px; border-radius: 14px; background: #fff3e0; border: 2px solid #ffcc80; font-weight: 600; color: #5a3e2b; line-height: 1.3; font-size: 1.05rem; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
+  .info.hide { visibility: hidden; }
+  .info .info-title { font-weight: bold; color: #e65100; margin-bottom: 4px; }
+  .dots { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; justify-content: center; z-index: 10; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #f4c7dc; cursor: pointer; transition: background .4s, transform .4s; }
+  .dot.active { background: #e0609a; transform: scale(1.3); }
+  .portada { width: 100%; max-width: 300px; height: auto; margin-top: 0; object-fit: contain; }
+</style>
+</head>
+<body>
+<div class="safari-bg" id="safariBg"><div class="sun"></div></div>
+<div class="card">
+  <button class="sound" id="sound" title="Silencio / Sonido">🎵</button>
+  <h1 id="title">🦓 Cumple de Pilar 🦒</h1>
+  <div class="countdown" id="countdown"></div>
+  <img class="portada" id="portada" src="Pilar_Portada.png" alt="Pilar">
+  <button class="start" id="start">¡Abrir invitación! 🦁</button>
+  <div class="animals" id="animals"></div>
+
+  <div id="stage"></div>
+  <div class="info hide" id="info"><div>📅 13 de diciembre<br>🕐 13:00 hs a 17:00 hs<br>📍 Eventos Matteo</div></div>
+
+  <a class="maps" id="maps" href="https://maps.app.goo.gl/huwNefT2t5GP5scv5" target="_blank" rel="noopener">📍 Cómo llegar</a>
+  <button class="restart" id="restart">Volver al inicio ↺</button>
+  <div class="dots" id="dots" style="display:none"></div>
+</div>
+
+<audio id="music" src="musica_safari.mp3" loop></audio>
+
+<script>
+const ELEFANTE = 'elefante.png';
+const MONO = 'mono.png';
+const JIRAFA = 'jirafa.png';
+const LEON = 'leon.png';
+const TIGRE = 'tigre.jpg';
+const COCODRILO = 'cocodrilo.jpg';
+const JEEP = 'Jeep-removebg-preview.png';
+const TIGRE_PNG = 'tigre.png';
+const COCODRILO_PNG = 'cocodrilo.png';
+const RINO_PNG = 'rino.png';
+const GUEPARDO_PNG = 'guepardo.png';
+const ELEFANTE2_PNG = 'elefante2.png';
+const LEON2_PNG = 'leon2.png';
+
+const scenes = [
+  { animals: [ELEFANTE, JIRAFA], lines: [
+    { t: '¡Hola! Soy Pilar.' },
+    { t: 'Crecí un montón este último año y ha sido un tiempo lleno de travesuras, descubrimientos, risas y mucho aprendizaje.' }
+  ]},
+  { animals: [MONO, LEON], lines: [
+    { t: 'Ya falta poco para mi cumple' },
+    { t: 'y quiero que formes parte del festejo de mi segundo año de vida.' },
+    { t: '¡Tu presencia lo hará aún más especial!' }
+  ]},
+  { animals: [TIGRE_PNG, COCODRILO_PNG], lines: [
+    { t: 'El gran día será' },
+    { t: '📅 El 13 de diciembre' },
+    { t: '🕐 13:00 hs a 17:00 hs' },
+    { t: '📍 Eventos Matteo' }
+  ]},
+  { animals: [RINO_PNG, GUEPARDO_PNG], lines: [
+    { t: 'Nos encantaría que estén desde el comienzo para compartir cada momento' },
+    { t: '¡No llegues tarde!' }
+  ]},
+  { animals: [ELEFANTE2_PNG, LEON2_PNG], lines: [
+    { t: 'Confírmale a mis papás la asistencia', b: true }
+  ]},
+  { animals: [JEEP], lines: [
+    { t: '¡Gracias por ser parte!' },
+    { t: '¡Nos vemos muy pronto!' }
+  ]}
+];
+
+// Fondo animado estilo safari: iconos flotando detrás del contenido
+const bgEl = document.getElementById('safariBg');
+const bgIcons = ['🦋', '🌿', '🌴', '🐾', '🌼', '🍃', '⭐'];
+const bgAnimals = ['elefante.png', 'mono.png', 'jirafa.png', 'leon.png', 'tigre.png', 'cocodrilo.png', 'rino.png', 'guepardo.png', 'elefante2.png', 'leon2.png'];
+for (let i = 0; i < 20; i++) {
+  const s = document.createElement('span');
+  s.className = 'float';
+  if (i % 2 === 0) {
+    const img = document.createElement('img');
+    img.src = bgAnimals[(i / 2) % bgAnimals.length];
+    img.alt = '';
+    s.appendChild(img);
+  } else {
+    s.textContent = bgIcons[i % bgIcons.length];
+  }
+  s.style.left = Math.random() * 100 + '%';
+  s.style.fontSize = (16 + Math.random() * 18) + 'px';
+  s.style.animationDuration = (12 + Math.random() * 12) + 's';
+  s.style.animationDelay = (-Math.random() * 20) + 's';
+  bgEl.appendChild(s);
+}
+
+const stage = document.getElementById('stage');
+const infoEl = document.getElementById('info');
+const animalsEl = document.getElementById('animals');
+const dotsEl = document.getElementById('dots');
+const titleEl = document.getElementById('title');
+const dots = [];
+for (let i = 0; i < scenes.length; i++) {
+  const d = document.createElement('span');
+  d.className = 'dot';
+  d.addEventListener('click', () => playScene(i));
+  dotsEl.appendChild(d);
+  dots.push(d);
+}
+const restartBtn = document.getElementById('restart');
+const mapsBtn = document.getElementById('maps');
+const startBtn = document.getElementById('start');
+const soundBtn = document.getElementById('sound');
+const music = document.getElementById('music');
+const countdownEl = document.getElementById('countdown');
+let muted = false;
+
+const target = new Date(2026, 11, 13, 13, 0, 0);
+function updateCountdown() {
+  const diff = target - new Date();
+  if (diff <= 0) { countdownEl.textContent = '¡Llegó el gran día! 🎉'; return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor(diff / 3600000) % 24;
+  const m = Math.floor(diff / 60000) % 60;
+  const s = Math.floor(diff / 1000) % 60;
+  countdownEl.textContent = `Faltan ${d} días, ${h} h, ${m} min y ${s} s`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+soundBtn.addEventListener('click', () => {
+  muted = !muted;
+  music.muted = muted;
+  soundBtn.textContent = muted ? '🔇' : '🎵';
+  soundBtn.style.background = muted ? '#bdbdbd' : '#a5d6a7';
+});
+
+function typeText(el, text, speed, done) {
+  let i = 0;
+  el.classList.add('cursor');
+  (function tick() {
+    el.textContent = text.slice(0, i++);
+    if (i <= text.length) setTimeout(tick, speed);
+    else { el.classList.remove('cursor'); done(); }
+  })();
+}
+
+function showAnimals(list) {
+  animalsEl.innerHTML = '';
+  list.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'Animalito del safari';
+    if (list.length === 1) img.className = 'big';
+    else if (list.length === 2) img.className = 'mid';
+    animalsEl.appendChild(img);
+  });
+}
+
+let runId = 0;
+function playScene(index) {
+  const myRun = ++runId;
+  const scene = scenes[index];
+  showAnimals(scene.animals);
+  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+  restartBtn.classList.remove('show');
+  mapsBtn.classList.toggle('show', index === scenes.length - 1);
+
+  stage.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'scene active';
+  stage.appendChild(div);
+
+  const lineEls = scene.lines.map(l => {
+    const p = document.createElement('p');
+    p.className = 'line' + (l.b ? ' bold' : '');
+    div.appendChild(p);
+    return p;
+  });
+
+  infoEl.classList.toggle('hide', index < 3);
+
+  let n = 0;
+  (function nextLine() {
+    if (myRun !== runId) return;
+    if (n >= scene.lines.length) {
+      if (index < scenes.length - 1) setTimeout(() => { if (myRun === runId) playScene(index + 1); }, 3500);
+      else restartBtn.classList.add('show');
+      return;
+    }
+    typeText(lineEls[n], scene.lines[n].t, 60, () => { n++; setTimeout(nextLine, 400); });
+  })();
+}
+
+startBtn.addEventListener('click', () => {
+  startBtn.style.display = 'none';
+  document.getElementById('portada').style.display = 'none';
+  titleEl.style.display = 'none';
+  dotsEl.style.display = 'flex';
+  countdownEl.style.display = 'none';
+  music.muted = muted;
+  music.play().catch(() => {});
+  playScene(0);
+});
+
+restartBtn.addEventListener('click', () => {
+  runId++;
+  stage.innerHTML = '';
+  infoEl.classList.add('hide');
+  animalsEl.innerHTML = '';
+  dots.forEach(d => d.classList.remove('active'));
+  mapsBtn.classList.remove('show');
+  restartBtn.classList.remove('show');
+  dotsEl.style.display = 'none';
+  titleEl.style.display = '';
+  countdownEl.style.display = '';
+  startBtn.style.display = '';
+  document.getElementById('portada').style.display = '';
+});
+</script>
+</body>
+</html>
